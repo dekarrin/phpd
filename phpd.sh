@@ -148,6 +148,7 @@ send_input ()
 		nc -Ul $PARTE_PHPD_OUT_SOCKET_DOMAIN > "$TEMP_OUTPUT" &
 		"$DIR"/send.sh "$2"
 		wait $!
+		rm "$PARTE_PHPD_OUT_SOCKET_DOMAIN"
 		local RESPONSE=$(cat "$TEMP_OUTPUT")
 		if [ "$RESPONSE" = "$PARTE_PHPD_REPLY_BAD_CODE" ]
 		then
@@ -168,6 +169,7 @@ get_var ()
 		nc -Ul $PARTE_PHPD_OUT_SOCKET_DOMAIN > "$TEMP_OUTPUT" &
 		"$DIR"/send.sh $PARTE_PHPD_CMD_VAR "$2"
 		wait $!
+		rm "$PARTE_PHPD_OUT_SOCKET_DOMAIN"
 		local RESPONSE=$(cat "$TEMP_OUTPUT")
 		if [ "$RESPONSE" = "$PARTE_PHPD_REPLY_BAD_VAR" ]
 		then
@@ -189,6 +191,7 @@ send_file ()
 		nc -Ul $PARTE_PHPD_OUT_SOCKET_DOMAIN > "$TEMP_OUTPUT" &
 		"$DIR"/send.sh $PARTE_PHPD_CMD_FILE "$2"
 		wait $!
+		rm "$PARTE_PHPD_OUT_SOCKET_DOMAIN"
 		local RESPONSE=$(cat "$TEMP_OUTPUT")
 		if [ "$RESPONSE" = "$PARTE_PHPD_REPLY_BAD_FILE" ]
 		then
@@ -206,7 +209,8 @@ dump_output ()
 	then
 		show_not_running $1
 	else
-		local PHP_OUTPUT_TMP="$PHPD_OUTPUT"_tmp
+		local PHPD_OUTPUT_TMP="$PHPD_OUTPUT"_tmp
+		touch "$PHPD_OUTPUT"
 		mv "$PHPD_OUTPUT" "$PHPD_OUTPUT_TMP"
 		cat "$PHPD_OUTPUT_TMP"
 		rm "$PHPD_OUTPUT_TMP"
