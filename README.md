@@ -10,12 +10,16 @@ down the engine. The script is run as a deamon that recieves its commands and
 code through a socket interface.
 
 Requirements
-============
+------------
 
 Phpd has been tested with PHP v5.2; any later versions should work fine, and it
 may run with earlier versions as well. It requires that PHP be compiled with the
 --enable-sockets option.
 
-Usage
-=====
+All shell scripts have been tested with bash; they may work in other shells with
+minor modification.
 
+Usage
+-----
+
+Run `phpd.sh -h' to see a list of commands.

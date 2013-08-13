@@ -19,16 +19,86 @@ TEMP_OUTPUT=/tmp/phpd_sock.out
 
 show_help ()
 {
-	echo "Syntax: $1 <cmd> <cmd-params>"
-	echo
-	echo "Valid commands:"
-	echo "start"
-	echo "stop"
-	echo "send-end"
-	echo "input <code>"
-	echo "file <filename>"
-	echo "var <var name>"
-	echo "dump"
+	if [ -z "$2" ]
+	then
+		echo "Syntax: $1 <cmd> <cmd-params>"
+		echo
+		echo "Valid commands:"
+		echo "start"
+		echo "stop"
+		echo "input <code>"
+		echo "file <filename>"
+		echo "var <var name>"
+		echo "dump"
+		echo
+		echo "For help with a command, type \`$1 -h <command>'"
+	else
+		case "$2" in
+		start)
+			echo "Syntax: $1 start"
+			echo
+			echo "Starts the PHP executor daemon. This command will fail if the daemon is"
+			echo "already running."
+			;;
+		stop)
+			echo "Syntax: $1 stop"
+			echo
+			echo "Stops the PHP executor daemon. This command will fail if the daemon is"
+			echo "not yet running."
+			;;
+
+		input)
+			echo "Syntax: $1 input <code>"
+			echo
+			echo "Passes PHP code to the executor daemon. The code is executed and the"
+			echo "output (if any) is sent to a temporary buffer. The output can be"
+			echo "retrieved by using the dump command."
+			echo
+			echo "This command will fail if the daemon is not yet running."
+			echo
+			echo "Parameter: code"
+			echo "The PHP code to send to the executor. The code is interpreted as if it"
+			echo "were at the beginning of a PHP source code file, so PHP sections must"
+			echo "begin with a PHP open tag, such as <?php."
+			;;
+
+		file)
+			echo "Syntax: $1 file <filename>"
+			echo
+			echo "Passes the contents of a file to the executor daemon. The file is"
+			echo "executed and the output (if any) is sent to a temporary buffer. The"
+			echo "output can be retrieved by using the dump command."
+			echo
+			echo "This command will fail if the daemon is not yet running."
+			echo
+			echo "Parameter: filename"
+			echo "The file to execute."
+			;;
+
+		var)
+			echo "Syntax: $1 var <var name>"
+			echo
+			echo "Gets the current value of a variable. This command will fail if the"
+			echo "daemon is not yet running."
+			echo
+			echo "Parameter: var name"
+			echo "The name of the variable to get the value of. This must be a variable"
+			echo "that exists in the global scope of the code that has been executed."
+			;;
+
+		dump)
+			echo "Syntax: $1 dump"
+			echo
+			echo "Outputs and then truncates the stored output from PHP. This command"
+			echo "will fail if the daemon is not yet running."
+			;;
+
+		*)
+			echo "'$2' is not a valid command. Type \`$1 -h' for a list of commands."
+			;;
+
+		esac
+	fi
 }
 
 start_daemon ()
@@ -143,6 +213,12 @@ dump_output ()
 		touch "$PHPD_OUTPUT"
 	fi
 }
+
+if [ "$1" = "-h" ]
+then
+	show_help "$0" "$2"
+	exit
+fi
 
 DIR=$(dirname $(readlink -f "$0"))
 
