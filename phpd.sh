@@ -2,11 +2,6 @@
 
 # Handles launching and controlling a PHP instance that is kept running while waiting for input
 
-# Change this to the command to execute PHP
-PHPD_CMD="php5"
-PHPD_SCRIPT="daemon.php"
-PHPD_OPTS="-f"
-
 CONFIG_FILE="vars.cfg"
 
 # Do not change below this line (unless you need to)
@@ -109,7 +104,7 @@ start_daemon ()
 		echo "To stop it, do "'`'"$1 stop"'`'
 	else
 		{
-			"$PHPD_CMD" "$DIR"/"$PHPD_SCRIPT" "$PHPD_OPTS" >> "$PHPD_OUTPUT" 2> /dev/null
+			"$PARTE_PHP_CMD" "$DIR"/"$PARTE_PHPD_SCRIPT" "$PARTE_PHPD_OPTS" >> "$PHPD_OUTPUT" 2> /dev/null
 			rm "$PID_FILE" "$PHPD_OUTPUT";
 		} &
 		echo $! > "$PID_FILE"
