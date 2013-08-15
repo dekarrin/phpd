@@ -85,7 +85,7 @@ input)
 	fi
 	;;
 
-file)
+read)
 	if [ ! -e "$PID_FILE" ]
 	then
 		echo "phpd does not appear to be running"
@@ -173,7 +173,7 @@ status)
 		echo "stop"
 		echo "status"
 		echo "input <code>"
-		echo "file <filename>"
+		echo "read <filename>"
 		echo "var <var name>"
 		echo "dump"
 		echo
@@ -220,8 +220,8 @@ status)
 			echo "Exits with status 2 if there is a syntax error in the given code."
 			;;
 
-		file)
-			echo "Syntax: $0 file <filename>"
+		read)
+			echo "Syntax: $0 read <filename>"
 			echo
 			echo "Passes the contents of a file to the executor daemon. The file is"
 			echo "executed and the output (if any) is sent to a temporary buffer. The"
@@ -256,15 +256,16 @@ status)
 			echo "Outputs and then truncates the stored output from PHP. This command"
 			echo "will fail if the daemon is not yet running."
 			echo
-			echo "Exits with status 0 if the current output is successfully dumped to stdout."
+			echo "Exits with status 0 if the current output is successfully dumped to"
+			echo "stdout."
 			echo "Exits with status 1 if the daemon is not running."
 			;;
 
 		status)
 			echo "Syntax: $0 status"
 			echo
-			echo "Checks whether the daemon is up or down. If it is up, outputs the PID of"
-			echo "the subshell that is running the daemon."
+			echo "Checks whether the daemon is up or down. If it is up, outputs the PID"
+			echo "of the subshell that is running the daemon."
 			echo
 			echo "Exits with status 0."
 			;;
