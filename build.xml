@@ -1,0 +1,14 @@
+<project name="JPHPD" default="build" basedir=".">
+
+	<property name="ant.build.javac.source" value="1.6" />
+	<property name="ant.build.javac.target" value="1.6" />
+
+	<property name="dir.src" location="JPHPD/src" />
+	<property name="dir.dist" location="." />
+	<property name="dir.bin" location="${dir.dist}/bin" />
+	<property name="file.jar" location="${dir.dist}/jphpd.jar" />
+
+	<target name="build">
+	</target>
+
+</project>
