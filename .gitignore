@@ -1,0 +1,7 @@
+# Exclude JPHPD build directories
+JPHPD/preproc
+JPHPD/build
+JPHPD/docs
+
+# Exclude vim swap files
+*.swp
