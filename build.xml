@@ -61,7 +61,6 @@
 		<copy todir="${dir.preproc}">
 			<fileset dir="${dir.src}" />
 			<filterchain>
-				<stripjavacomments/>
 				<replacetokens>
 					<token key="PHPD_SCRIPT" value="${phpd_script}" />
 				</replacetokens>
