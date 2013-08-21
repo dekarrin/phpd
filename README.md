@@ -23,3 +23,10 @@ Usage
 -----
 
 Run `phpd.sh -h' to see a list of commands.
+
+Java Interface
+--------------
+
+The daemon may be used from java by building the included JPHPD library. Due to
+the source code's dependence on custom macros, it must be built by using ant.
+Run `ant help' to see a list of build targets.
