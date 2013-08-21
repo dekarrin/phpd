@@ -1,14 +1,92 @@
-<project name="JPHPD" default="build" basedir=".">
+<project name="JPHPD" default="build" basedir="JPHPD">
+
+	<!-- Build script for JPHPD. For an explanation of targets, do `ant help'. -->
 
 	<property name="ant.build.javac.source" value="1.6" />
 	<property name="ant.build.javac.target" value="1.6" />
 
-	<property name="dir.src" location="JPHPD/src" />
-	<property name="dir.dist" location="." />
-	<property name="dir.bin" location="${dir.dist}/bin" />
-	<property name="file.jar" location="${dir.dist}/jphpd.jar" />
+	<property name="dir.src" location="src" />
+	<property name="dir.preproc" location="preproc" />
+	<property name="dir.build" location="build" />
+	<property name="dir.docs" location="docs" />
+	<property name="dir.bin" location="${dir.build}/bin" />
+	<property name="dir.dist" location="${dir.build}/dist" />
+	<property name="dir.debug" location="${dir.build}/debug" />
 
-	<target name="build">
+	<property name="file.jar.dist" location="${dir.dist}/jphpd.jar" />
+	<property name="file.jar.debug" location="${dir.dist}/jphpd_debug.jar" />
+
+	<property name="phpd_script" location="../phpd.sh" />
+
+	<target name="build" depends="preprocess">
+		<mkdir dir="${dir.bin}" />
+		<javac srcdir="${dir.preproc}" destdir="${dir.bin}" includeantruntime="false" />
+	</target>
+
+	<target name="build-debug" depends="preprocess">
+		<mkdir dir="${dir.debug}" />
+		<javac srcdir="${dir.preproc}" destdir="${dir.bin}" includeantruntime="false" debug="true" debuglevel="lines,vars,source" />
+	</target>
+
+	<target name="clean">
+		<delete dir="${dir.preproc}" />
+		<delete dir="${dir.build}" />
+		<delete dir="${dir.docs}" />
+		<delete file="${file.jar.dist}" />
+		<delete file="${file.jar.debug}" />
+	</target>
+
+	<target name="docs">
+		<mkdir dir="${dir.docs}" />
+		<javadoc sourcepath="${dir.src}" destdir="${dir.docs}" />
+	</target>
+
+	<target name="docs-all">
+		<mkdir dir="${dir.docs}" />
+		<javadoc sourcepath="${dir.src}" destdir="${dir.docs}" access="private" />
+	</target>
+
+	<target name="jar" depends="build">
+		<mkdir dir="${dir.dist}" />
+		<jar basedir="${dir.bin}" destfile="${file.jar.dist}" />
+	</target>
+
+	<target name="jar-debug" depends="build-debug">
+		<mkdir dir="${dir.dist}" />
+		<jar basedir="${dir.debug}" destfile="${file.jar.debug}" />
+	</target>	
+
+	<target name="preprocess">
+		<mkdir dir="${dir.preproc}" />
+		<copy todir="${dir.preproc}">
+			<fileset dir="${dir.src}" />
+			<filterchain>
+				<stripjavacomments/>
+				<replacetokens>
+					<token key="PHPD_SCRIPT" value="${phpd_script}" />
+				</replacetokens>
+			</filterchain>
+		</copy>
+	</target>
+
+	<target name="help">
+		<echo>List of build targets:</echo>
+		<echo />
+		<echo>help          displays this help</echo>
+		<echo>build         compiles source into classes</echo>
+		<echo>build-debug   compiles source with debug symbols included</echo>
+		<echo>clean         deletes all compiled source, jar files, and documentation</echo>
+		<echo>docs          creates javadocs for the public API</echo>
+		<echo>docs-all      creates javadocs for all source, including items marked private</echo>
+		<echo>jar           compiles source into a JAR file</echo>
+		<echo>jar-debug     compiles source into a JAR file with debug symbols included</echo>
+		<echo>preprocess    runs the preprocessor on the source code</echo>
+		<echo />
+		<echo />
+		<echo>'build' is the default target. If the file phpd.sh will not be located in the</echo>
+		<echo>parent directory of the JPHPD folder when JPHPD is executed, its location must</echo>
+		<echo>be passed to ant by using the option -Dphpd_script=/path/to/script when</echo>
+		<echo>building binaries.</echo>
 	</target>
 
 </project>

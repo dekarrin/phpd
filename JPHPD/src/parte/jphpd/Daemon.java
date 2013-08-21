@@ -45,26 +45,27 @@ public class Daemon {
 	private static Daemon instance = null;
 
 	/**
+	 * The absolute path to the phpd.sh script.
+	 */
+	public static final String PHPD_SCRIPT = "@PHPD_SCRIPT@";
+
+	/**
 	 * Gets an instance of Daemon.
 	 *
-	 * @param script The script that controls the daemon (phpd.sh). This is
-	 * only used the first time getInstance() is called.
 	 * @return The instance.
 	 */
-	public static Daemon getInstance(File script) {
+	public static Daemon getInstance() {
 		if (instance == null) {
-			instance = new Daemon(script);
+			instance = new Daemon();
 		}
 		return instance;
 	}
 
 	/**
 	 * Creates a new Daemon.
-	 *
-	 * @param script The script that controls the daemon (phpd.sh).
 	 */
-	private Daemon(File script) {
-		this.command = script.getAbsolutePath() + " %s %s";
+	private Daemon() {
+		this.command = Daemon.PHPD_SCRIPT + " %s %s";
 	}
 
 	/**
