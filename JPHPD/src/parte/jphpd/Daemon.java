@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,36 +38,30 @@ public class Daemon {
 	 * The format string containing the command to execute to control the
 	 * daemon.
 	 */
-	private String command;
+	private static final String command = "@PHPD_SCRIPT@ %s %s";
 
 	/**
 	 * The instance of Daemon.
 	 */
 	private static Daemon instance = null;
-
-	/**
-	 * The absolute path to the phpd.sh script.
-	 */
-	public static final String PHPD_SCRIPT = "@PHPD_SCRIPT@";
-
+	
 	/**
 	 * Gets an instance of Daemon.
 	 *
 	 * @return The instance.
 	 */
 	public static Daemon getInstance() {
-		if (instance == null) {
-			instance = new Daemon();
+		if (Daemon.instance == null) {
+			Daemon.instance = new Daemon();
 		}
-		return instance;
+		return Daemon.instance;
 	}
 
 	/**
-	 * Creates a new Daemon.
+	 * Creates a new Daemon instance. Package-private to enforce singleton
+	 * usage.
 	 */
-	private Daemon() {
-		this.command = Daemon.PHPD_SCRIPT + " %s %s";
-	}
+	Daemon() {}
 
 	/**
 	 * Starts the PHP executor daemon.
@@ -159,6 +154,8 @@ public class Daemon {
 	 *
 	 * @param subcmd The subcommand to execute.
 	 * @return The status of the command.
+	 * @throws DaemonExecutionException If the command could not be
+	 * executed.
 	 */
 	private static int exec(String subcmd) {
 		return Daemon.exec(subcmd, "");
@@ -173,6 +170,8 @@ public class Daemon {
 	 * @param subcmd The subcommand to execute.
 	 * @param arg The argument to the subcommand.
 	 * @return The status of the command.
+	 * @throws DaemonExecutionException If the command could not be
+	 * executed.
 	 */
 	private static int exec(String subcmd, String arg) {
 		return Daemon.exec(subcmd, arg, null);
@@ -188,28 +187,30 @@ public class Daemon {
 	 * @param arg The argument to the subcommand.
 	 * @param buf A StringBuffer to put the output in.
 	 * @return The status of the command.
+	 * @throws DaemonExecutionException If the command could not be
+	 * executed.
 	 */
 	private static int exec(String subcmd, String arg, StringBuffer buf) {
-		String command = String.format(this.command, subcmd, arg);
+		String command = String.format(Daemon.command, subcmd, arg);
 		Runtime r = Runtime.getRuntime();
 		Process p = null;
 		try {
 			p = r.exec(command);
 			p.waitFor();
-		} catch (IOException e) {
-			// would be thrown below if we handled the exception.
-			throw new NullPointerException(e);
-		} catch (InterruptedThreadException e) {
-			// would be thrown below if we handled the exception.
-			throw new NullPointerException(e);
-		}
-		if (buf != null) {
-			java.io.InputStreamReader is = null;
-			is = new java.io.InputStreamReader(p.getInputStream());
-			char c;
-			while ((c = is.read()) != -1) {
-				buf.append(c);
+			if (buf != null) {
+				InputStreamReader is = null;
+				is = new InputStreamReader(p.getInputStream());
+				int ch;
+				while ((ch = is.read()) != -1) {
+					buf.append((char) ch);
+				}
 			}
+		} catch (IOException e) {
+			throw new DaemonExecutionException(e);
+		} catch (InterruptedException e) {
+			throw new DaemonExecutionException(e);
+		} catch (NullPointerException e) {
+			throw new DaemonExecutionException(e);
 		}
 		return p.exitValue();
 	}

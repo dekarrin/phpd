@@ -12,11 +12,18 @@
 	<property name="dir.bin" location="${dir.build}/bin" />
 	<property name="dir.dist" location="${dir.build}/dist" />
 	<property name="dir.debug" location="${dir.build}/debug" />
+	<property name="dir.docs.api" location="${dir.docs}/api" />
+	<property name="dir.docs.internal" location="${dir.docs}/internal" />
 
 	<property name="file.jar.dist" location="${dir.dist}/jphpd.jar" />
 	<property name="file.jar.debug" location="${dir.dist}/jphpd_debug.jar" />
+	<property name="file.jar.source" location="${dir.dist}/jphpd_source.jar" />
+	<property name="file.dist" location="${dir.dist}/jphpd.tar.gz" />
+	<property name="file.license" location="../LICENSE" />
 
 	<property name="phpd_script" location="../phpd.sh" />
+
+	<target name="all" depends="clean,jar,jar-debug,jar-source,docs,docs-all,dist" />
 
 	<target name="build" depends="preprocess">
 		<mkdir dir="${dir.bin}" />
@@ -25,7 +32,15 @@
 
 	<target name="build-debug" depends="preprocess">
 		<mkdir dir="${dir.debug}" />
-		<javac srcdir="${dir.preproc}" destdir="${dir.bin}" includeantruntime="false" debug="true" debuglevel="lines,vars,source" />
+		<javac srcdir="${dir.preproc}" destdir="${dir.debug}" includeantruntime="false" debug="true" debuglevel="lines,vars,source" />
+	</target>
+
+	<target name="dist" depends="jar,docs">
+		<tar destfile="${file.dist}" compression="gzip">
+			<tarfileset dir="${dir.docs.api}" />
+			<tarfileset file="${file.jar.dist}" />
+			<tarfileset file="${file.license}" />
+		</tar>
 	</target>
 
 	<target name="clean">
@@ -37,24 +52,47 @@
 	</target>
 
 	<target name="docs">
-		<mkdir dir="${dir.docs}" />
+		<mkdir dir="${dir.docs.api}" />
 		<javadoc sourcepath="${dir.src}" destdir="${dir.docs}" />
 	</target>
 
 	<target name="docs-all">
-		<mkdir dir="${dir.docs}" />
+		<mkdir dir="${dir.docs.internal}" />
 		<javadoc sourcepath="${dir.src}" destdir="${dir.docs}" access="private" />
 	</target>
 
 	<target name="jar" depends="build">
 		<mkdir dir="${dir.dist}" />
-		<jar basedir="${dir.bin}" destfile="${file.jar.dist}" />
+		<jar destfile="${file.jar.dist}">
+			<fileset file="${file.license}" />
+			<fileset dir="${dir.bin}" />
+			<manifest>
+				<attribute name="License" value="GNU GPLv3" />
+			</manifest>
+		</jar>
 	</target>
 
 	<target name="jar-debug" depends="build-debug">
 		<mkdir dir="${dir.dist}" />
-		<jar basedir="${dir.debug}" destfile="${file.jar.debug}" />
-	</target>	
+		<jar destfile="${file.jar.debug}">
+			<fileset file="${file.license}" />
+			<fileset dir="${dir.debug}" />
+			<manifest>
+				<attribute name="License" value="GNU GPLv3" />
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="jar-source">
+		<mkdir dir="${dir.dist}" />
+		<jar destfile="${file.jar.source}">
+			<fileset file="${file.license}" />
+			<fileset dir="${dir.src}" />
+			<manifest>
+				<attribute name="License" value="GNU GPLv3" />
+			</manifest>
+		</jar>
+	</target>
 
 	<target name="preprocess">
 		<mkdir dir="${dir.preproc}" />
@@ -71,14 +109,17 @@
 	<target name="help">
 		<echo>List of build targets:</echo>
 		<echo />
-		<echo>help          displays this help</echo>
+		<echo>all           cleans, then builds all bins, jars, and docs</echo>
 		<echo>build         compiles source into classes</echo>
 		<echo>build-debug   compiles source with debug symbols included</echo>
+		<echo>dist          builds the dist jar and api docs and archives them together</echo>
 		<echo>clean         deletes all compiled source, jar files, and documentation</echo>
 		<echo>docs          creates javadocs for the public API</echo>
-		<echo>docs-all      creates javadocs for all source, including items marked private</echo>
-		<echo>jar           compiles source into a JAR file</echo>
+		<echo>docs-all      creates javadocs for all items, including internal items</echo>
+		<echo>help          displays this help</echo>
+		<echo>jar           compiles source into a JAR file for distribution</echo>
 		<echo>jar-debug     compiles source into a JAR file with debug symbols included</echo>
+		<echo>jar-source    copies all source files into a JAR file</echo>
 		<echo>preprocess    runs the preprocessor on the source code</echo>
 		<echo />
 		<echo />
