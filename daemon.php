@@ -215,7 +215,7 @@ while ($_PARTE_PHPD['keep_open']) {
 				break;
 
 			case PARTE_PHPD_MODE_PARSE:
-				$_PARTE_PHPD['good_code'] = @eval('$_PARTE_PHPD[\'parsed\'] = '.$_PARTE_PHPD['msg']);
+				$_PARTE_PHPD['good_code'] = @eval('$_PARTE_PHPD[\'parsed\'] = '.$_PARTE_PHPD['msg'].';');
 				if ($_PARTE_PHPD['good_code'] === false) {
 					parte_phpd_write_err(PARTE_PHPD_REPLY_BAD_PARSE);
 				} else {

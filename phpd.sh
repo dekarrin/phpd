@@ -23,7 +23,7 @@ parse_config "$DIR"/"$CONFIG_FILE"
 
 case "$1" in
 start)
-	if [ -e "$PID_FILE" ]
+	if [[ -e "$PID_FILE" && ! "$2" = "-f" ]]
 	then
 		echo "phpd already appears to be running"
 		echo "To stop it, do "'`'"$0 stop"'`'
@@ -73,7 +73,7 @@ input)
 		"$DIR"/send.sh "$2"
 		wait $!
 		rm "$PARTE_PHPD_OUT_SOCKET_DOMAIN"
-		local RESPONSE=$(cat "$TEMP_OUTPUT")
+		RESPONSE=$(cat "$TEMP_OUTPUT")
 		if [ "$RESPONSE" = "$PARTE_PHPD_REPLY_BAD_CODE" ]
 		then
 			echo "Syntax error in given code"
@@ -96,7 +96,7 @@ read)
 		"$DIR"/send.sh $PARTE_PHPD_CMD_FILE "$2"
 		wait $!
 		rm "$PARTE_PHPD_OUT_SOCKET_DOMAIN"
-		local RESPONSE=$(cat "$TEMP_OUTPUT")
+		RESPONSE=$(cat "$TEMP_OUTPUT")
 		if [ "$RESPONSE" = "$PARTE_PHPD_REPLY_BAD_FILE" ]
 		then
 			echo "Could not execute file"
@@ -119,7 +119,7 @@ var)
 		"$DIR"/send.sh $PARTE_PHPD_CMD_VAR "$2"
 		wait $!
 		rm "$PARTE_PHPD_OUT_SOCKET_DOMAIN"
-		local RESPONSE=$(cat "$TEMP_OUTPUT")
+		RESPONSE=$(cat "$TEMP_OUTPUT")
 		if [ "$RESPONSE" = "$PARTE_PHPD_REPLY_BAD_VAR" ]
 		then
 			echo "Invalid variable name" >&2
@@ -138,14 +138,14 @@ parse)
 		echo "To start it, do "'`'"$0 start"'`'
 		EXIT_STATUS=1
 	else
-		nc -U1 $PARTE_PHPD_OUT_SOCKET_DOMAIN > "$TEMP_OUTPUT" &
+		nc -Ul $PARTE_PHPD_OUT_SOCKET_DOMAIN > "$TEMP_OUTPUT" &
 		"$DIR"/send.sh $PARTE_PHPD_CMD_PARSE "$2"
 		wait $!
 		rm "$PARTE_PHPD_OUT_SOCKET_DOMAIN"
-		local RESPONSE=$(cat "$TEMP_OUTPUT")
+		RESPONSE=$(cat "$TEMP_OUTPUT")
 		if [ "$RESPONSE" = "$PARTE_PHPD_REPLY_BAD_PARSE" ]
 		then
-			echo "Invalid syntax" >&2
+			echo "Malformed string" >&2
 			EXIT_STATUS=2
 		else
 			echo $RESPONSE | sed s/^$PARTE_PHPD_REPLY_PARSE//g
@@ -159,6 +159,11 @@ send-end)
 	echo "Sent end command to daemon."
 	;;
 
+restart)
+	"$0" stop
+	"$0" start
+	;;
+
 dump)
 	if [ ! -e "$PID_FILE" ]
 	then
@@ -166,7 +171,7 @@ dump)
 		echo "To start it, do "'`'"$0 start"'`'
 		exit EXIT_STATUS=1
 	else
-		local PHPD_OUTPUT_TMP="$PHPD_OUTPUT"_tmp
+		PHPD_OUTPUT_TMP="$PHPD_OUTPUT"_tmp
 		touch "$PHPD_OUTPUT"
 		mv "$PHPD_OUTPUT" "$PHPD_OUTPUT_TMP"
 		cat "$PHPD_OUTPUT_TMP"
@@ -204,10 +209,13 @@ status)
 	else
 		case "$2" in
 		start)
-			echo "Syntax: $0 start"
+			echo "Syntax: $0 start [-f]"
 			echo
 			echo "Starts the PHP executor daemon. This command will fail if the daemon is"
 			echo "already running."
+			echo
+			echo "Pass option -f to force start it; it must be started this way after an"
+			echo "unclean exit."
 			echo
 			echo "Exits with status 0 if the daemon was successfully started."
 			echo "Exits with status 1 if the daemon is already running."
