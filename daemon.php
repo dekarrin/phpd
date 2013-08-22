@@ -5,6 +5,7 @@ define('PARTE_PHPD_CONFIG_FILE', 'vars.cfg');
 define('PARTE_PHPD_MODE_NORMAL', 0);
 define('PARTE_PHPD_MODE_VAR', 1);
 define('PARTE_PHPD_MODE_FILE', 2);
+define('PARTE_PHPD_MODE_PARSE', 3);
 
 function parte_phpd_read_config($filename) {
 	$f = fopen($filename, 'r');
@@ -181,6 +182,8 @@ while ($_PARTE_PHPD['keep_open']) {
 					$_PARTE_PHPD['mode'] = PARTE_PHPD_MODE_VAR;
 				} else if ($_PARTE_PHPD['msg'] == PARTE_PHPD_CMD_FILE) {
 					$_PARTE_PHPD['mode'] = PARTE_PHPD_MODE_FILE;
+				} else if ($_PARTE_PHPD['msg'] == PARTE_PHPD_CMD_PARSE) {
+					$_PARTE_PHPD['mode'] = PARTE_PHPD_MODE_PARSE;
 				} else {
 					$_PARTE_PHPD['good_code'] = @eval('?'.">{$_PARTE_PHPD['msg']}");
 					if ($_PARTE_PHPD['good_code'] === false) {
@@ -209,6 +212,15 @@ while ($_PARTE_PHPD['keep_open']) {
 					parte_phpd_write_err(PARTE_PHPD_REPLY_BAD_FILE);
 				}
 				$_PARTE_PHPD['mode'] = PARTE_PHPD_MODE_NORMAL;
+				break;
+
+			case PARTE_PHPD_MODE_PARSE:
+				$_PARTE_PHPD['good_code'] = @eval('$_PARTE_PHPD[\'parsed\'] = '.$_PARTE_PHPD['msg']);
+				if ($_PARTE_PHPD['good_code'] === false) {
+					parte_phpd_write_err(PARTE_PHPD_REPLY_BAD_PARSE);
+				} else {
+					parte_phpd_write_out(PARTE_PHPD_REPLY_PARSE . $_PARTE_PHPD['parsed']);
+				}
 				break;
 			}
 		}

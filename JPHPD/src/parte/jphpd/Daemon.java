@@ -142,8 +142,40 @@ public class Daemon {
 			varValue = val.toString();
 			return true;
 		} else {
+			varValue = null;
 			return false;
 		}
+	}
+
+	/**
+	 * Parses a string.
+	 *
+	 * @param string The string to parse.
+	 * @return Whether the string was successfully parsed.
+	 * @throws DaemonDownException If the daemon is not running.
+	 */
+	public boolean parse(String string) {
+		StringBuffer val = new StringBuffer();
+		int status = Daemon.exec("parse", string, val);
+		if (status == Daemon.STATUS_NOT_READY) {
+			throw new DaemonDownException();
+		}
+		if (status == Daemon.STATUS_SUCCESS) {
+			varValue = val.toString();
+			return true;
+		} else {
+			varValue = null;
+			return false;
+		}
+	}
+
+	/**
+	 * Gets the value of the last response.
+	 *
+	 * @return The value.
+	 */
+	public String getResponseValue() {
+		return varValue;
 	}
 
 	/**

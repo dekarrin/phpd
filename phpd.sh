@@ -125,8 +125,30 @@ var)
 			echo "Invalid variable name" >&2
 			EXIT_STATUS=2
 		else
-			VAL=$(echo $RESPONSE | sed s/^$PARTE_PHPD_REPLY_VAR//g)
-			echo $VAL
+			echo $RESPONSE | sed s/^$PARTE_PHPD_REPLY_VAR//g
+		fi
+		rm "$TEMP_OUTPUT"
+	fi
+	;;
+
+parse)
+	if [ ! -e "$PID_FILE" ]
+	then
+		echo "phpd does not appeaar to be running"
+		echo "To start it, do "'`'"$0 start"'`'
+		EXIT_STATUS=1
+	else
+		nc -U1 $PARTE_PHPD_OUT_SOCKET_DOMAIN > "$TEMP_OUTPUT" &
+		"$DIR"/send.sh $PARTE_PHPD_CMD_PARSE "$2"
+		wait $!
+		rm "$PARTE_PHPD_OUT_SOCKET_DOMAIN"
+		local RESPONSE=$(cat "$TEMP_OUTPUT")
+		if [ "$RESPONSE" = "$PARTE_PHPD_REPLY_BAD_PARSE" ]
+		then
+			echo "Invalid syntax" >&2
+			EXIT_STATUS=2
+		else
+			echo $RESPONSE | sed s/^$PARTE_PHPD_REPLY_PARSE//g
 		fi
 		rm "$TEMP_OUTPUT"
 	fi
@@ -172,6 +194,7 @@ status)
 		echo "start"
 		echo "stop"
 		echo "status"
+		echo "parse <string>"
 		echo "input <code>"
 		echo "read <filename>"
 		echo "var <var name>"
@@ -218,6 +241,19 @@ status)
 			echo "Exits with status 0 if the code was successfully executed."
 			echo "Exits with status 1 if the daemon is not running."
 			echo "Exits with status 2 if there is a syntax error in the given code."
+			;;
+
+		parse)
+			echo "Syntax: $0 parse <string>"
+			echo
+			echo "Parses a PHP string."
+			echo
+			echo "Parameter: string"
+			echo "The PHP string to parse."
+			echo
+			echo "Exits with status 0 if the string was successfully parsed."
+			echo "Exits with status 1 if the daemon is not running."
+			echo "Exits with status 2 if the given string is not valid."
 			;;
 
 		read)
