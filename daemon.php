@@ -13,7 +13,6 @@ function parte_phpd_read_config($filename) {
 		$line = rtrim($line, "\t\n\r\0\x0B");
 		$line = preg_replace('/\s+#.*$/', '', $line);
 		if (!empty($line) && substr($line, 0, 1) !== '#') {
-			$line = preg_replace(
 			$parts = explode('=', $line);
 			$name = $parts[0];
 			$val = $parts[1];
