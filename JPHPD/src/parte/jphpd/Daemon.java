@@ -35,10 +35,9 @@ public class Daemon {
 	private String varValue = null;
 
 	/**
-	 * The format string containing the command to execute to control the
-	 * daemon.
+	 * The command to execute to control the daemon.
 	 */
-	private static final String command = "@PHPD_SCRIPT@ %s %s";
+	private static final String command = "@PHPD_SCRIPT@";
 
 	/**
 	 * The instance of Daemon.
@@ -190,7 +189,7 @@ public class Daemon {
 	 * executed.
 	 */
 	private static int exec(String subcmd) {
-		return Daemon.exec(subcmd, "");
+		return Daemon.exec(subcmd, null);
 	}
 
 	/**
@@ -223,17 +222,32 @@ public class Daemon {
 	 * executed.
 	 */
 	private static int exec(String subcmd, String arg, StringBuffer buf) {
-		String command = String.format(Daemon.command, subcmd, arg);
+		int cSize = (arg != null) ? 3 : 2;
+		String[] command = new String[cSize];
+		command[0] = Daemon.command;
+		command[1] = subcmd;
+		if (arg != null) {
+			command[2] = arg;
+		}
 		Runtime r = Runtime.getRuntime();
 		Process p = null;
 		try {
 			p = r.exec(command);
 			p.waitFor();
 			if (buf != null) {
+				BufferedReader er = null;
+				BufferedReader br = null;
 				InputStreamReader is = null;
+				InputStreamReader es = null;
 				is = new InputStreamReader(p.getInputStream());
+				es = new InputStreamReader(p.getErrorStream());
+				br = new BufferedReader(is);
+				er = new BufferedReader(es);
 				int ch;
-				while ((ch = is.read()) != -1) {
+				while ((ch = br.read()) != -1) {
+					buf.append((char) ch);
+				}
+				while ((ch = er.read()) != -1) {
 					buf.append((char) ch);
 				}
 			}
