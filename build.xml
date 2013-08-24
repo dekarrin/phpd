@@ -20,6 +20,7 @@
 	<property name="file.jar.source" location="${dir.dist}/jphpd_source.jar" />
 	<property name="file.dist" location="${dir.dist}/jphpd.tar.gz" />
 	<property name="file.license" location="../LICENSE" />
+	<property name="file.license.junixsocket" location="../LICENSE-JUNIXSOCKET" />
 
 	<property name="phpd_script" location="../phpd.sh" />
 
@@ -32,7 +33,7 @@
 
 	<target name="build-debug" depends="preprocess">
 		<mkdir dir="${dir.debug}" />
-		<javac srcdir="${dir.preproc}" destdir="${dir.debug}" includeantruntime="false" debug="true" debuglevel="lines,vars,source" />
+		<javac classpath="" srcdir="${dir.preproc}" destdir="${dir.debug}" includeantruntime="false" debug="true" debuglevel="lines,vars,source" />
 	</target>
 
 	<target name="dist" depends="jar,docs">
@@ -40,6 +41,7 @@
 			<tarfileset dir="${dir.docs.api}" />
 			<tarfileset file="${file.jar.dist}" />
 			<tarfileset file="${file.license}" />
+			<tarfileset file="${file.license.junixsocket}" />
 		</tar>
 	</target>
 
@@ -68,6 +70,7 @@
 			<fileset dir="${dir.bin}" />
 			<manifest>
 				<attribute name="License" value="GNU GPLv3" />
+				<attribute name="Class-Path" value="junixsocket.jar" />
 			</manifest>
 		</jar>
 	</target>
@@ -79,6 +82,7 @@
 			<fileset dir="${dir.debug}" />
 			<manifest>
 				<attribute name="License" value="GNU GPLv3" />
+				<attribute name="Class-Path" value="junixsocket.jar" />
 			</manifest>
 		</jar>
 	</target>
