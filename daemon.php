@@ -11,9 +11,9 @@ function parte_phpd_read_config($filename) {
 	$f = fopen($filename, 'r');
 	while (($line = fgets($f)) !== false) {
 		$line = rtrim($line, "\t\n\r\0\x0B");
-		$line = preg_replace('/\s+#.*$/', '', $line);
+		$line = preg_replace('/\s*#.*$/', '', $line);
 		if (!empty($line) && substr($line, 0, 1) !== '#') {
-			$parts = explode('=', $line);
+			$parts = explode('=', $line, 2);
 			$name = $parts[0];
 			$val = $parts[1];
 			define($name, $val);
