@@ -80,16 +80,40 @@ function parte_phpd_check_args($argv, $argc) {
 		for ($i = 1; $i < $argc; $i++) {
 			if ($argv[$i] == '-h') {
 				echo "Options:\n";
-				echo "-h:  this help\n";
-				echo "-f:  force unlink/creation of socket domain\n";
-				echo "-v:  verbose mode\n";
+				echo "-h:           this help\n";
+				echo "-f:           force unlink/creation of socket domain\n";
+				echo "-v:           verbose mode\n";
+				echo "-i <domain>:  specify the socket domain for input\n";
+				echo "-o <domain>:  specify the socket domain for output\n";
+				echo "-c <file>:    specify the confuration file\n";
 				die();
 			} else if ($argv[$i] == '-f') {
 				$_PARTE_PHPD['force_unlink'] = true;
 			} else if ($argv[$i] == '-v') {
 				$_PARTE_PHPD['verbose'] = true;
+			} else if ($argv[$i] == '-i') {
+				if ($i + 1 < $argc) {
+					$i++;
+					$_PARTE_PHPD['in_socket_domain'] = $argv[$i];
+				} else {
+					echo "Missing argument to option '-i'. Use -h for help.\n";
+				}
+			} else if ($argv[$i] == '-o') {
+				if ($i + 1 < $argc) {
+					$i++;
+					$_PARTE_PHPD['out_socket_domain'] = $argv[$i];
+				} else {
+					echo "Missing argument to option '-o'. Use -h for help.\n";
+				}
+			} else if ($argv[$i] == '-c') {
+				if ($i + 1 < $argc) {
+					$i++;
+					$_PARTE_PHPD['out_socket_domain'] = $argv[$i];
+				} else {
+					echo "Missing argument to option '-c'. Use -h for help.\n";
+				}
 			} else {
-				echo "Unrecognized option/argument '" . $argv[1] . "'. Use -h for help\n";
+				echo "Unrecognized option/argument '" . $argv[1] . "'. Use -h for help.\n";
 			}
 		}
 	}
@@ -105,9 +129,9 @@ function parte_phpd_verbose($output, $non_verbose_output = NULL) {
 }
 
 function parte_phpd_write_out($output) {
-	if (file_exists(PARTE_PHPD_OUT_SOCKET_DOMAIN)) {
+	if (file_exists($_PARTE_PHPD['out_socket_domain'])) {
 		$out = parte_phpd_create();
-		parte_phpd_connect($out, PARTE_PHPD_OUT_SOCKET_DOMAIN);
+		parte_phpd_connect($out, $_PARTE_PHPD['out_socket_domain']);
 		if (@socket_send($out, $output, strlen($output), MSG_EOF) === false) {
 			parte_phpd_write_stderr(parte_phpd_sock_err("Could not send reply: "));
 		}
@@ -128,14 +152,28 @@ function parte_phpd_write_stderr($msg) {
 	fclose($f);
 }
 
-$_PARTE_PHPD = array('force_unlink' => false, 'verbose' => false);
+$_PARTE_PHPD = array(
+	'config_file' => PARTE_PHPD_CONFIG_FILE,
+	'in_socket_domain' => NULL,
+	'out_socket_domain' => NULL,
+	'force_unlink' => false,
+	'verbose' => false
+);
 
-parte_phpd_read_config(PARTE_PHPD_CONFIG_FILE);
 parte_phpd_check_args($argv, $argc);
+parte_phpd_read_config($_PARTE_PHPD['config_file']);
+
+if (is_null($_PARTE_PHPD['in_socket_domain']) {
+	$_PARTE_PHPD['in_socket_domain'] = PARTE_PHPD_IN_SOCKET_DOMAIN;
+}
+
+if (is_null($_PARTE_PHPD['out_socket_domain']) {
+	$_PARTE_PHPD['out_socket_domain'] = PARTE_PHPD_OUT_SOCKET_DOMAIN;
+}
 
 if ($_PARTE_PHPD['force_unlink']) {
-	$_PARTE_PHPD['fexists'] = file_exists(PARTE_PHPD_IN_SOCKET_DOMAIN);
-	@unlink(PARTE_PHPD_IN_SOCKET_DOMAIN);
+	$_PARTE_PHPD['fexists'] = file_exists($_PARTE_PHPD['in_socket_domain']);
+	@unlink($_PARTE_PHPD['in_socket_domain']);
 	if ($_PARTE_PHPD['fexists']) {
 		parte_phpd_verbose('unlinked existing socket domain' . "\n");
 	} else {
@@ -143,10 +181,10 @@ if ($_PARTE_PHPD['force_unlink']) {
 	}
 }
 $_PARTE_PHPD['in_conn'] = parte_phpd_create();
-parte_phpd_bind($_PARTE_PHPD['in_conn'], PARTE_PHPD_IN_SOCKET_DOMAIN);
+parte_phpd_bind($_PARTE_PHPD['in_conn'], $_PARTE_PHPD['in_socket_domain']);
 parte_phpd_listen($_PARTE_PHPD['in_conn']);
 $_PARTE_PHPD['keep_open'] = true;
-parte_phpd_verbose('listening for connections on ' . PARTE_PHPD_IN_SOCKET_DOMAIN . "\n", PARTE_PHPD_IN_SOCKET_DOMAIN . "\n");
+parte_phpd_verbose('listening for connections on ' . $_PARTE_PHPD['in_socket_domain'] . "\n", $_PARTE_PHPD['in_socket_domain'] . "\n");
 while ($_PARTE_PHPD['keep_open']) {
 	$_PARTE_PHPD['sock'] = socket_accept($_PARTE_PHPD['in_conn']);
 	parte_phpd_verbose('connection established' . "\n");
@@ -229,5 +267,5 @@ while ($_PARTE_PHPD['keep_open']) {
 	parte_phpd_verbose('connection closed' . "\n");
 }
 parte_phpd_verbose('shutting down' . "\n");
-@unlink(PARTE_PHPD_IN_SOCKET_DOMAIN);
+@unlink($_PARTE_PHPD['in_socket_domain']);
 ?>
