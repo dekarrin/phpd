@@ -5,7 +5,9 @@ package parte.jphpd;
  * not be running.
  */
 public class DaemonUpException extends IllegalStateException {
-	
+
+    private static final long serialVersionUID = -264389755151238887L;
+
 	/**
 	 * Creates a new DaemonUpException.
 	 */
