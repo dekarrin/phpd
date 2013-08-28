@@ -30,16 +30,11 @@ public class Daemon {
 	 * on the classpath.
 	 */
 	private static final String CONFIG_FILE = "@CONFIG_FILE@";
-	
-	/**
-	 * The file that temporary output is placed in.
-	 */
-	private static final String PHPD_OUTPUT_FILE = "@PHPD_OUTPUT@";
 
 	/**
 	 * The number of milliseconds to wait for a shutdown.
 	 */
-    private static final long PHPD_STOP_TIMEOUT = 3000;
+	private static final long PHPD_STOP_TIMEOUT = 3000;
 
 	/**
 	 * Contains all the configuration options.
@@ -50,21 +45,21 @@ public class Daemon {
 	 * The last loaded config file.
 	 */
 	private String lastConfig = null;
-    
-    /**
-     * Runs the daemon script.
-     */
-    private ScheduledExecutorService scriptExecutor;
-    
-    /**
-     * THe daemon script.
-     */
-    private DaemonScript script;
-    
-    /**
-     * The value of the last response that had one.
-     */
-    private String replyValue = null;
+	
+	/**
+	 * Runs the daemon script.
+	 */
+	private ScheduledExecutorService scriptExecutor;
+	
+	/**
+	 * The daemon script.
+	 */
+	private DaemonScript script;
+	
+	/**
+	 * The value of the last response that had one.
+	 */
+	private String replyValue = null;
 
 	/**
 	 * Creates a new Daemon instance and loads settings from the default
@@ -96,6 +91,20 @@ public class Daemon {
 		}
 	}
 	
+	public static void main(String[] args) {
+		try {
+			Daemon d = new Daemon();
+			d.start();
+			d.input("<?php $v = 4;");
+			d.var("v");
+			String rep = d.getReplyValue();
+			System.out.println(rep);
+			d.stop();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	/**
 	 * Starts running this Daemon.
 	 * 
@@ -110,10 +119,17 @@ public class Daemon {
 		String inSock = getConfig("PARTE_PHPD_IN_SOCKET_DOMAIN");
 		String outSock = getConfig("PARTE_PHPD_OUT_SOCKET_DOMAIN");
 		scriptExecutor = Executors.newScheduledThreadPool(2);
-		script = new DaemonScript(cmd, scr, lastConfig, inSock,	outSock,
-				Daemon.PHPD_OUTPUT_FILE);
+		script = new DaemonScript(cmd, scr, lastConfig, inSock,	outSock);
 		script.setExecutor(scriptExecutor);
 		scriptExecutor.scheduleAtFixedRate(script, 0, 20, TimeUnit.MILLISECONDS);
+		// workaround for writing not immediately available:
+		try {
+			Thread.sleep(200);
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			// should never happen
+			throw new RuntimeException("Thread killed unexpectedly", e);
+		}
 	}
 	
 	/**
@@ -133,6 +149,7 @@ public class Daemon {
 				Thread.sleep(50);
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
+				break;
 			}
 		}
 		if (isRunning()) {

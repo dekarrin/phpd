@@ -34,6 +34,11 @@ class DaemonScript implements Runnable {
 	 * The output from running PHP.
 	 */
 	private StringBuilder output;
+	
+	/**
+	 * The error from running PHP.
+	 */
+	private StringBuilder error;
 
 	/**
 	 * Creates a new DaemonScript.
@@ -43,12 +48,10 @@ class DaemonScript implements Runnable {
 	 * @param config The file that the script should use for configuration.
 	 * @param inSocket The path to the input socket.
 	 * @param outSocket The path to the output socket.
-	 * @param phpdOutput The file to write output to.
 	 * @throws IOException
 	 */
 	public DaemonScript(String php, String script, String config,
-			String inSocket, String outSocket, String phpdOutput) throws
-			IOException {
+			String inSocket, String outSocket) throws IOException {
 		String[] command = new String[9];
 		command[0] = php;
 		command[1] = script;
@@ -60,6 +63,7 @@ class DaemonScript implements Runnable {
 		command[7] = "-o";
 		command[8] = outSocket;
 		output = new StringBuilder();
+		error = new StringBuilder();
 		spawn(command);
 	}
 
@@ -83,9 +87,9 @@ class DaemonScript implements Runnable {
 	public boolean isRunning() {
 		try {
 			phpd.exitValue();
-			return true;
-		} catch (IllegalThreadStateException e) {
 			return false;
+		} catch (IllegalThreadStateException e) {
+			return true;
 		}
 	}
 
@@ -101,8 +105,30 @@ class DaemonScript implements Runnable {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-		} else if (executor != null) {
-			executor.shutdown();
+		} else {
+			try {
+				readStreams();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			if (executor != null) {
+				executor.shutdown();
+			}
+		}
+	}
+	
+	/**
+	 * Dumps all current streams to given.
+	 */
+	public String debug() {
+		try {
+	        readStreams();
+        } catch (IOException e) {
+	        // TODO Auto-generated catch block
+	        e.printStackTrace();
+        }
+		synchronized (this) {
+			return "STDOUT:\n" + output.toString() + "\n\nSTDERR:\n" + error.toString();
 		}
 	}
 
@@ -122,13 +148,15 @@ class DaemonScript implements Runnable {
 	 * @throws IOException If an I/O error occurs while reading.
 	 */
 	private void readStreams() throws IOException {
-		if (outStream.ready()) {
+		while (outStream.ready()) {
 			synchronized (this) {
 				output.append((char) outStream.read());
 			}
 		}
-		if (errStream.ready()) {
-			errStream.read(); // throw away the error stream
+		while (errStream.ready()) {
+			synchronized (this) {
+				error.append((char) errStream.read());
+			}
 		}
 	}
 

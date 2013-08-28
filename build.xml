@@ -15,6 +15,9 @@
 	<property name="dir.docs.api" location="${dir.docs}/api" />
 	<property name="dir.docs.internal" location="${dir.docs}/internal" />
 
+	<property name="dir.lib" location="lib" />
+	<property name="lib.junixsocket.jar" location="${dir.lib}/junixsocket.jar" />
+
 	<property name="file.jar.dist" location="${dir.dist}/jphpd.jar" />
 	<property name="file.jar.debug" location="${dir.dist}/jphpd_debug.jar" />
 	<property name="file.jar.source" location="${dir.dist}/jphpd_source.jar" />
@@ -22,18 +25,18 @@
 	<property name="file.license" location="../LICENSE" />
 	<property name="file.license.junixsocket" location="../LICENSE-JUNIXSOCKET" />
 
-	<property name="phpd_script" location="../phpd.sh" />
+	<property name="file.phpd.config" location="../vars.cfg" />
 
 	<target name="all" depends="clean,jar,jar-debug,jar-source,docs,docs-all,dist" />
 
 	<target name="build" depends="preprocess">
 		<mkdir dir="${dir.bin}" />
-		<javac srcdir="${dir.preproc}" destdir="${dir.bin}" includeantruntime="false" />
+		<javac classpath="${lib.junixsocket.jar}" srcdir="${dir.preproc}" destdir="${dir.bin}" includeantruntime="false" />
 	</target>
 
 	<target name="build-debug" depends="preprocess">
 		<mkdir dir="${dir.debug}" />
-		<javac classpath="" srcdir="${dir.preproc}" destdir="${dir.debug}" includeantruntime="false" debug="true" debuglevel="lines,vars,source" />
+		<javac classpath="${lib.junixsocket.jar}" srcdir="${dir.preproc}" destdir="${dir.debug}" includeantruntime="false" debug="true" debuglevel="lines,vars,source" />
 	</target>
 
 	<target name="dist" depends="jar,docs">
@@ -104,7 +107,7 @@
 			<fileset dir="${dir.src}" />
 			<filterchain>
 				<replacetokens>
-					<token key="PHPD_SCRIPT" value="${phpd_script}" />
+					<token key="CONFIG_FILE" value="${file.phpd.config}" />
 				</replacetokens>
 			</filterchain>
 		</copy>

@@ -85,7 +85,7 @@ function parte_phpd_check_args($argv, $argc) {
 				echo "-v:           verbose mode\n";
 				echo "-i <domain>:  specify the socket domain for input\n";
 				echo "-o <domain>:  specify the socket domain for output\n";
-				echo "-c <file>:    specify the confuration file\n";
+				echo "-c <file>:    specify the configuration file\n";
 				die();
 			} else if ($argv[$i] == '-f') {
 				$_PARTE_PHPD['force_unlink'] = true;
@@ -108,7 +108,7 @@ function parte_phpd_check_args($argv, $argc) {
 			} else if ($argv[$i] == '-c') {
 				if ($i + 1 < $argc) {
 					$i++;
-					$_PARTE_PHPD['out_socket_domain'] = $argv[$i];
+					$_PARTE_PHPD['config_file'] = $argv[$i];
 				} else {
 					echo "Missing argument to option '-c'. Use -h for help.\n";
 				}
@@ -129,6 +129,7 @@ function parte_phpd_verbose($output, $non_verbose_output = NULL) {
 }
 
 function parte_phpd_write_out($output) {
+	global $_PARTE_PHPD;
 	if (file_exists($_PARTE_PHPD['out_socket_domain'])) {
 		$out = parte_phpd_create();
 		parte_phpd_connect($out, $_PARTE_PHPD['out_socket_domain']);
@@ -163,11 +164,11 @@ $_PARTE_PHPD = array(
 parte_phpd_check_args($argv, $argc);
 parte_phpd_read_config($_PARTE_PHPD['config_file']);
 
-if (is_null($_PARTE_PHPD['in_socket_domain']) {
+if (is_null($_PARTE_PHPD['in_socket_domain'])) {
 	$_PARTE_PHPD['in_socket_domain'] = PARTE_PHPD_IN_SOCKET_DOMAIN;
 }
 
-if (is_null($_PARTE_PHPD['out_socket_domain']) {
+if (is_null($_PARTE_PHPD['out_socket_domain'])) {
 	$_PARTE_PHPD['out_socket_domain'] = PARTE_PHPD_OUT_SOCKET_DOMAIN;
 }
 

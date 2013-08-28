@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 import org.newsclub.net.unix.AFUNIXServerSocket;
 import org.newsclub.net.unix.AFUNIXSocketAddress;
@@ -39,9 +37,8 @@ class DaemonListener {
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
-			} finally {
-				runner = null;
 			}
+			runner = null;
 		}
 	}
 
@@ -49,11 +46,6 @@ class DaemonListener {
 	 * Runs the listening in its own thread.
 	 */
 	private ListenerRunner runner = null;
-
-	/**
-	 * Handles running all of the runners.
-	 */
-	private static Executor executor = Executors.newCachedThreadPool();
 
 	/**
 	 * The socket that phpd is being listened to on.
@@ -78,14 +70,17 @@ class DaemonListener {
 
 	/**
 	 * Waits for the runner to finish listening for output, then returns the
-	 * output. Blocks until output is ready.
+	 * output. Blocks until output is ready. After this method is called, this
+	 * DaemonListener will be unusable.
 	 *
 	 * @return The output.
+	 * @throws IOException 
 	 */
-	public String getOutput() throws InterruptedException {
+	public String getOutput() throws InterruptedException, IOException {
 		while (runner != null) {
 			Thread.sleep(20);
 		}
+		server.close();
 		return output.toString();
 	}
 
@@ -95,6 +90,6 @@ class DaemonListener {
 	public void listen() {
 		output = new StringBuilder();
 		runner = new ListenerRunner();
-		DaemonListener.executor.execute(runner);
+		(new Thread(runner, "DaemonListenerThread")).start();
 	}
 }
