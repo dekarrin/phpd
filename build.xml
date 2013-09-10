@@ -17,6 +17,7 @@
 
 	<property name="dir.lib" location="lib" />
 	<property name="lib.junixsocket.jar" location="${dir.lib}/junixsocket.jar" />
+	<property name="lib.junixsocket.native" location="${dir.lib}/libjunixsocket-linux-1.5-i386.so" />
 
 	<property name="file.jar.dist" location="${dir.dist}/jphpd.jar" />
 	<property name="file.jar.debug" location="${dir.dist}/jphpd_debug.jar" />
@@ -76,6 +77,7 @@
 				<attribute name="Class-Path" value="junixsocket.jar" />
 			</manifest>
 		</jar>
+		<copy file="${lib.junixsocket.native}" todir="/usr/lib" />
 	</target>
 
 	<target name="jar-debug" depends="build-debug">
